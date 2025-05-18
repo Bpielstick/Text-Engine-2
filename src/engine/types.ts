@@ -22,7 +22,7 @@ export interface ConditionAny {
 }
 
 export interface ConditionStat {
-  var: string;
+  stat: string;
   min?: number;
   max?: number;
 }
