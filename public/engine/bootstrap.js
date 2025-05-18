@@ -1,4 +1,8 @@
-import EngineAPI from './engine/index.js';
+import { contentLoader } from './contentLoader.js';
+import EngineAPI from './index.js';
+
+await contentLoader.loadAll();
+const first = EngineAPI.startGame();
 
 function renderScene(scene){
   const sceneEl=document.getElementById('scene');
@@ -26,7 +30,5 @@ function choose(id){
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const scene=EngineAPI.startGame();
-  renderScene(scene);
-});
+renderScene(first);
+

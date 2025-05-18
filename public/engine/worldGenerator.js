@@ -1,5 +1,5 @@
-import { contentLoader } from './contentLoader';
-import gameState from './gameState';
+import { contentLoader } from './contentLoader.js';
+import gameState from './gameState.js';
 // --- internal helpers ---
 function hashString(str) {
     let h = 2166136261 >>> 0;

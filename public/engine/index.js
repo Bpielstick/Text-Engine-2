@@ -1,7 +1,7 @@
-import narrativeManager from './narrativeManager';
-import { gameState, GameState } from './gameState';
-import { contentLoader } from './contentLoader';
-import { saveGame, loadGame } from './saveLoad';
+import narrativeManager from './narrativeManager.js';
+import { gameState, GameState } from './gameState.js';
+import { contentLoader } from './contentLoader.js';
+import { saveGame, loadGame } from './saveLoad.js';
 const EngineAPI = {
     startGame() {
         gameState.hydrate(new GameState(contentLoader, contentLoader.config).serialize()); // clear vars → new game with defaults

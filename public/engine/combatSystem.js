@@ -1,6 +1,6 @@
-import { contentLoader } from './contentLoader';
-import { gameState } from './gameState';
-import { DamageType, } from './types';
+import { contentLoader } from './contentLoader.js';
+import { gameState } from './gameState.js';
+import { DamageType } from './types.js';
 export class CombatActor {
     id;
     name;
