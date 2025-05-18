@@ -121,7 +121,7 @@ export class NarrativeManager {
 
   private pickRandom<T>(pool: RandomPool<T>[]): T {
     const total = pool.reduce((s, p) => s + (p.weight ?? 1), 0);
-    let r = Math.random() * total;
+    let r = this.state.random() * total;
     for (const p of pool) {
       r -= p.weight ?? 1;
       if (r <= 0) return p.value;

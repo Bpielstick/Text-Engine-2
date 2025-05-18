@@ -70,7 +70,7 @@ export class CombatSystem {
 
   // ----- utilities -----
   private pickRandom<T>(arr: T[]): T {
-    return arr[Math.floor(Math.random() * arr.length)];
+    return arr[Math.floor(gameState.random() * arr.length)];
   }
 
   private createActor(id: string, equipment?: Record<string, EquippedItem>): CombatActor {
@@ -232,7 +232,7 @@ export class CombatSystem {
       enemiesIds.push(...encounter);
     } else {
       const total = encounter.randomPool.reduce((t, p) => t + (p.weight ?? 1), 0);
-      let r = Math.random() * total;
+      let r = gameState.random() * total;
       for (const p of encounter.randomPool) {
         r -= p.weight ?? 1;
         if (r <= 0) {

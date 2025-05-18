@@ -92,7 +92,7 @@ export class GameState {
     this.vars[k] = current + delta;
   }
 
-  private random(): number {
+  random(): number {
     // Mulberry32 PRNG using rngRuntime as state
     let t = (this.world.rngRuntime += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
