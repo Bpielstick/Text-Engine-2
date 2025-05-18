@@ -1,7 +1,7 @@
 import { ContentLoader, contentLoader } from './contentLoader';
 import { GameState, gameState } from './gameState';
 import { Choice, Scene, RandomPool } from './types';
-import { CombatSystem, CombatStartPayload, combatSystem } from './combatSystem';
+import { CombatSystem, CombatStart, combatSystem } from './combatSystem';
 
 export interface SceneOutput {
   text: string;
@@ -9,7 +9,7 @@ export interface SceneOutput {
   inCombat: false;
 }
 
-export type ChooseResult = SceneOutput | CombatStartPayload | { error: string };
+export type ChooseResult = SceneOutput | CombatStart | { error: string };
 
 export class NarrativeManager {
   private loader: ContentLoader;
