@@ -1,6 +1,6 @@
-import { contentLoader } from './contentLoader';
-import { gameState } from './gameState';
-import { combatSystem } from './combatSystem';
+import { contentLoader } from './contentLoader.js';
+import { gameState } from './gameState.js';
+import { combatSystem } from './combatSystem.js';
 export class NarrativeManager {
     loader;
     state;

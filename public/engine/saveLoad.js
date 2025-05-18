@@ -1,8 +1,8 @@
-import combatSystem from './combatSystem';
-import { gameState } from './gameState';
-import { contentLoader } from './contentLoader';
-import { generateRegion } from './worldGenerator';
-import narrativeManager from './narrativeManager';
+import combatSystem from './combatSystem.js';
+import { gameState } from './gameState.js';
+import { contentLoader } from './contentLoader.js';
+import { generateRegion } from './worldGenerator.js';
+import narrativeManager from './narrativeManager.js';
 export function saveGame(slot = 0) {
     if (combatSystem.isActive() && !contentLoader.config.canSaveInCombat)
         throw new Error('CANNOT_SAVE_IN_COMBAT');

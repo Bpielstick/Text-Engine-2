@@ -1,4 +1,4 @@
-import { contentLoader } from './contentLoader';
+import { contentLoader } from './contentLoader.js';
 // ---------- class GameState ----------
 export class GameState {
     loader;
