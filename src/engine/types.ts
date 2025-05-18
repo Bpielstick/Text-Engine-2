@@ -1,3 +1,4 @@
+
 // TypeScript interfaces and enums for game content
 
 export interface RandomPool<T> {
@@ -11,10 +12,18 @@ export interface ConditionFlag {
   value: boolean;
 }
 export interface ConditionStat {
-  stat: string;
-  min?: number;
-  max?: number;
+
+export interface RandomPool<T>{
+  value: T;
+  weight?: number;
 }
+
+// --- Scenes ---
+export interface ConditionFlag{
+  flag: string;
+  value: boolean;
+}
+
 export interface ConditionItem {
   item: string;
 }
@@ -24,12 +33,19 @@ export interface ConditionChance {
 export interface ConditionAny {
   any: Condition[];
 }
-export type Condition =
-  | ConditionFlag
-  | ConditionStat
-  | ConditionItem
-  | ConditionChance
-  | ConditionAny;
+=======
+
+export interface ConditionItem{
+  item: string;
+}
+
+export interface ConditionChance{
+  chance: number; // percent 0-100
+}
+
+export interface ConditionAny{
+  any: Condition[];
+}
 
 export interface EffectSet {
   set: Record<string, boolean | number | string>;
@@ -46,12 +62,26 @@ export interface EffectRemoveItem {
 export interface EffectReset {
   reset: true;
 }
-export type Effect =
-  | EffectSet
-  | EffectChange
-  | EffectAddItem
-  | EffectRemoveItem
-  | EffectReset;
+=======
+export interface EffectSet{
+  set: Record<string, boolean | number | string>;
+}
+
+export interface EffectChange{
+  change: Record<string, number>; // delta ±
+}
+
+export interface EffectAddItem{
+  addItem: string | string[];
+}
+
+export interface EffectRemoveItem{
+  removeItem: string | string[];
+}
+
+export interface EffectReset{
+  reset: true;
+}
 
 export interface Choice {
   id?: string;
@@ -78,6 +108,7 @@ export enum DamageType {
   Physical = "physical",
   Desire = "desire",
 }
+
 export enum TargetType {
   Enemy = "enemy",
   Ally = "ally",
