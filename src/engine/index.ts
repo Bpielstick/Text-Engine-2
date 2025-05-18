@@ -1,12 +1,13 @@
 import narrativeManager, { SceneOutput } from './narrativeManager';
-import { gameState, ItemInstance } from './gameState';
+import { gameState, GameState, ItemInstance } from './gameState';
 import { contentLoader } from './contentLoader';
 import { saveGame, loadGame } from './saveLoad';
 
 const EngineAPI = {
   startGame(): SceneOutput {
-    gameState.hydrate(gameState.serialize()); // clear vars → new game
-    gameState.world.seed = contentLoader.config.worldSeed;
+    gameState.hydrate(
+      new GameState(contentLoader, contentLoader.config).serialize(),
+    ); // clear vars → new game with defaults
     narrativeManager.start(contentLoader.config.startScene);
     return narrativeManager.getSceneOutput();
   },
