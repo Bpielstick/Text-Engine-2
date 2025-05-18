@@ -1,0 +1,198 @@
+import fs from 'fs';
+import path from 'path';
+import {
+  Scene,
+  Skill,
+  Item,
+  Creature,
+  Region,
+  GameConfig,
+  Choice,
+  RandomPool,
+} from './types';
+
+export class ContentError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentError';
+  }
+}
+
+const ID_REGEX = /^[a-z][A-Za-z0-9_]*$/;
+
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new ContentError(message);
+  }
+}
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
+export class ContentLoader {
+  readonly scenes: Map<string, Scene>;
+  readonly skills: Map<string, Skill>;
+  readonly items: Map<string, Item>;
+  readonly creatures: Map<string, Creature>;
+  readonly regions: Map<string, Region>;
+  readonly config: GameConfig;
+
+  private readonly baseDir: string;
+
+  constructor() {
+    this.baseDir = path.join(__dirname, '../content');
+    const scenes = this.loadArray<Scene>('scenes.json');
+    const skills = this.loadArray<Skill>('skills.json');
+    const items = this.loadArray<Item>('items.json');
+    const creatures = this.loadArray<Creature>('creatures.json');
+    const regions = this.loadArray<Region>('regions.json');
+    const config = this.loadObject<GameConfig>('gameConfig.json');
+
+    this.scenes = this.arrayToMap(scenes, 'Scene');
+    this.skills = this.arrayToMap(skills, 'Skill');
+    this.items = this.arrayToMap(items, 'Item');
+    this.creatures = this.arrayToMap(creatures, 'Creature');
+    this.regions = this.arrayToMap(regions, 'Region');
+    this.config = config;
+
+    this.validateCrossReferences();
+  }
+
+  private loadArray<T extends { id: string; schemaVersion: number }>(
+    file: string,
+  ): T[] {
+    const data = this.readJSON(file);
+    assert(Array.isArray(data), `${file} must contain an array`);
+    data.forEach((obj, i) => {
+      assert(
+        obj.schemaVersion === 1,
+        `${file}[${i}] schemaVersion must be 1`,
+      );
+      assert(ID_REGEX.test(obj.id), `${file}[${i}] invalid id '${obj.id}'`);
+    });
+    return data as T[];
+  }
+
+  private loadObject<T extends { schemaVersion?: number }>(file: string): T {
+    const data = this.readJSON(file);
+    assert(
+      data && typeof data === 'object' && !Array.isArray(data),
+      `${file} must contain an object`,
+    );
+    assert(data.schemaVersion === 1, `${file} schemaVersion must be 1`);
+    return data as T;
+  }
+
+  private readJSON(file: string): any {
+    const full = path.join(this.baseDir, file);
+    const text = fs.readFileSync(full, 'utf8');
+    return JSON.parse(text);
+  }
+
+  private arrayToMap<T extends { id: string }>(arr: T[], name: string): Map<string, T> {
+    const map = new Map<string, T>();
+    arr.forEach((obj, i) => {
+      assert(!map.has(obj.id), `${name} id '${obj.id}' duplicated`);
+      map.set(obj.id, obj);
+    });
+    return map;
+  }
+
+  private validateRandomPool(pool: RandomPool<string>[], context: string): void {
+    pool.forEach((p, index) => {
+      assert(
+        ID_REGEX.test(p.value),
+        `${context} randomPool[${index}] invalid id '${p.value}'`,
+      );
+      if (p.weight !== undefined) {
+        assert(
+          Number.isInteger(p.weight) && p.weight > 0,
+          `${context} randomPool[${index}] weight must be positive integer`,
+        );
+      }
+    });
+  }
+
+  private validateChoice(choice: Choice, sceneId: string): void {
+    const ctx = `Scene '${sceneId}' choice`;
+    if (choice.nextScene) {
+      if (typeof choice.nextScene === 'string') {
+        assert(
+          this.scenes.has(choice.nextScene),
+          `${ctx} nextScene '${choice.nextScene}' not found`,
+        );
+      } else {
+        this.validateRandomPool(choice.nextScene.randomPool, `${ctx} nextScene`);
+        choice.nextScene.randomPool.forEach((p) => {
+          assert(
+            this.scenes.has(p.value),
+            `${ctx} nextScene random id '${p.value}' not found`,
+          );
+        });
+      }
+    }
+    if (choice.encounter) {
+      if (typeof choice.encounter === 'string') {
+        assert(
+          this.creatures.has(choice.encounter),
+          `${ctx} encounter '${choice.encounter}' not found`,
+        );
+      } else if (Array.isArray(choice.encounter)) {
+        choice.encounter.forEach((id) => {
+          assert(this.creatures.has(id), `${ctx} encounter '${id}' not found`);
+        });
+      } else {
+        this.validateRandomPool(
+          choice.encounter.randomPool,
+          `${ctx} encounter`,
+        );
+        choice.encounter.randomPool.forEach((p) => {
+          assert(
+            this.creatures.has(p.value),
+            `${ctx} encounter random id '${p.value}' not found`,
+          );
+        });
+      }
+    }
+  }
+
+  private validateCrossReferences(): void {
+    // Validate scenes choices
+    for (const scene of this.scenes.values()) {
+      scene.choices.forEach((choice) => this.validateChoice(choice, scene.id));
+    }
+
+    // Validate creature skills and drops
+    for (const creature of this.creatures.values()) {
+      creature.skills?.forEach((id) => {
+        assert(this.skills.has(id), `Creature '${creature.id}' skill '${id}' invalid`);
+      });
+      creature.drops?.forEach((id) => {
+        assert(this.items.has(id), `Creature '${creature.id}' drop '${id}' invalid`);
+      });
+    }
+
+    // Validate regions
+    for (const region of this.regions.values()) {
+      region.roomTemplates.forEach((id) => {
+        assert(this.scenes.has(id), `Region '${region.id}' roomTemplate '${id}' invalid`);
+      });
+    }
+
+    // Validate config references
+    this.config.startingInventory?.forEach((id) => {
+      assert(this.items.has(id), `Config startingInventory item '${id}' invalid`);
+    });
+    if (this.config.startingEquipment) {
+      Object.entries(this.config.startingEquipment).forEach(([, id]) => {
+        assert(this.items.has(id), `Config startingEquipment item '${id}' invalid`);
+      });
+    }
+    assert(
+      this.scenes.has(this.config.startScene),
+      `Config startScene '${this.config.startScene}' invalid`,
+    );
+  }
+}
+
+export const contentLoader = new ContentLoader();
+export default contentLoader;

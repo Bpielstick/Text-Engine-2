@@ -17,6 +17,7 @@
     "eslint": "latest",
     "esbuild": "latest",
     "mocha": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "latest"
   }
 }

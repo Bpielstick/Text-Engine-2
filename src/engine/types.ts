@@ -1,3 +1,18 @@
+
+// TypeScript interfaces and enums for game content
+
+export interface RandomPool<T> {
+  value: T;
+  weight?: number; // default = 1
+}
+
+// --- Scenes ---
+export interface ConditionFlag {
+  flag: string;
+  value: boolean;
+}
+export interface ConditionStat {
+
 export interface RandomPool<T>{
   value: T;
   weight?: number;
@@ -9,11 +24,16 @@ export interface ConditionFlag{
   value: boolean;
 }
 
-export interface ConditionStat{
-  stat: string;
-  min?: number;
-  max?: number;
+export interface ConditionItem {
+  item: string;
 }
+export interface ConditionChance {
+  chance: number; // percent 0-100
+}
+export interface ConditionAny {
+  any: Condition[];
+}
+=======
 
 export interface ConditionItem{
   item: string;
@@ -27,13 +47,22 @@ export interface ConditionAny{
   any: Condition[];
 }
 
-export type Condition =
-  | ConditionFlag
-  | ConditionStat
-  | ConditionItem
-  | ConditionChance
-  | ConditionAny;
-
+export interface EffectSet {
+  set: Record<string, boolean | number | string>;
+}
+export interface EffectChange {
+  change: Record<string, number>; // delta ±
+}
+export interface EffectAddItem {
+  addItem: string | string[];
+}
+export interface EffectRemoveItem {
+  removeItem: string | string[];
+}
+export interface EffectReset {
+  reset: true;
+}
+=======
 export interface EffectSet{
   set: Record<string, boolean | number | string>;
 }
@@ -54,14 +83,7 @@ export interface EffectReset{
   reset: true;
 }
 
-export type Effect =
-  | EffectSet
-  | EffectChange
-  | EffectAddItem
-  | EffectRemoveItem
-  | EffectReset;
-
-export interface Choice{
+export interface Choice {
   id?: string;
   text: string;
   nextScene?: string | { randomPool: RandomPool<string>[] };
@@ -72,7 +94,7 @@ export interface Choice{
   effects?: Effect | Effect[];
 }
 
-export interface Scene{
+export interface Scene {
   id: string;
   text: string;
   choices: Choice[];
@@ -94,7 +116,7 @@ export enum TargetType {
   Area = "area",
 }
 
-export interface Skill{
+export interface Skill {
   id: string;
   name: string;
   description?: string;
@@ -109,7 +131,7 @@ export interface Skill{
 }
 
 // --- Items ---
-export interface Item{
+export interface Item {
   id: string;
   name: string;
   description?: string;
@@ -130,7 +152,7 @@ export interface Item{
 }
 
 // --- Creatures ---
-export interface Creature{
+export interface Creature {
   id: string;
   name: string;
   maxResistance: number;
@@ -151,7 +173,7 @@ export interface Creature{
 }
 
 // --- Regions ---
-export interface Region{
+export interface Region {
   id: string;
   name: string;
   description?: string;
@@ -166,7 +188,7 @@ export interface Region{
 }
 
 // --- Game Config ---
-export interface GameConfig{
+export interface GameConfig {
   startScene: string;
   playerCharacter: string;
   startingInventory?: string[];
@@ -176,4 +198,3 @@ export interface GameConfig{
   canSaveInCombat: boolean;
   version: "1.0";
 }
-
