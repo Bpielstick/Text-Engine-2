@@ -29,7 +29,7 @@ describe('EngineAPI', () => {
     gameState.inventory.push({ id: 'sword', qty: 1 });
     EngineAPI.equipItem('sword');
     expect(gameState.inventory.find((i: any) => i.id === 'sword')).to.be.undefined;
-    expect(gameState.equipment['hand'].id).to.equal('sword');
+    expect(gameState.equipment['hand'][0].id).to.equal('sword');
   });
 
   it('unequipItem returns item to inventory', () => {

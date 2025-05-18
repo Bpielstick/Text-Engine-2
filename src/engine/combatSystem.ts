@@ -34,9 +34,9 @@ export class CombatActor {
   lustDefense?: number;
   skills: string[];
   cooldowns: Record<string, number> = {};
-  equipment: Record<string, EquippedItem> = {};
+  equipment: Record<string, EquippedItem[]> = {};
 
-  constructor(base: Creature, equipment?: Record<string, EquippedItem>) {
+  constructor(base: Creature, equipment?: Record<string, EquippedItem[]>) {
     this.id = base.id;
     this.name = base.name;
     this.resistance = base.maxResistance;
@@ -73,7 +73,7 @@ export class CombatSystem {
     return arr[Math.floor(gameState.random() * arr.length)];
   }
 
-  private createActor(id: string, equipment?: Record<string, EquippedItem>): CombatActor {
+  private createActor(id: string, equipment?: Record<string, EquippedItem[]>): CombatActor {
     const base = contentLoader.creatures.get(id);
     if (!base) throw new Error(`Creature '${id}' not found`);
     return new CombatActor(base, equipment);
@@ -99,29 +99,47 @@ export class CombatSystem {
       });
   }
 
-  private armorProtection(actor: CombatActor): number {
-    let prot = 0;
-    Object.values(actor.equipment).forEach((eq) => {
-      const item = contentLoader.items.get(eq.id);
-      if (item?.protection) prot += item.protection;
-    });
-    return prot;
+  private armorProtection(actor: CombatActor, zone: string): number {
+    const items = actor.equipment[zone];
+    if (!items || items.length === 0) return 0;
+    const outer = items.reduce((a, b) =>
+      (b.layer ?? 0) > (a.layer ?? 0) ? b : a,
+    );
+    const item = contentLoader.items.get(outer.id);
+    return item?.protection ?? 0;
   }
 
-  private handleDurability(actor: CombatActor): void {
-    Object.entries(actor.equipment).forEach(([slot, eq]) => {
-      const item = contentLoader.items.get(eq.id);
-      if (!item?.protection) return;
-      if (eq.durability !== undefined) {
-        eq.durability -= 1;
-      }
-      if (eq.durability !== undefined && eq.durability <= 0) {
-        delete actor.equipment[slot];
-        if (actor.id === 'player') {
-          delete gameState.equipment[slot];
+  private handleDurability(actor: CombatActor, zone: string): void {
+    const items = actor.equipment[zone];
+    if (!items || items.length === 0) return;
+    let outerIdx = 0;
+    for (let i = 1; i < items.length; i++) {
+      if ((items[i].layer ?? 0) > (items[outerIdx].layer ?? 0)) outerIdx = i;
+    }
+    const eq = items[outerIdx];
+    const item = contentLoader.items.get(eq.id);
+    if (!item?.protection) return;
+    if (eq.durability !== undefined) {
+      eq.durability -= 1;
+    }
+    if (eq.durability !== undefined && eq.durability <= 0) {
+      items.splice(outerIdx, 1);
+      if (items.length === 0) delete actor.equipment[zone];
+      else actor.equipment[zone] = items;
+      if (actor.id === 'player') {
+        const playerItems = gameState.equipment[zone];
+        if (playerItems) {
+          const idx = playerItems.findIndex(
+            (e) => e.id === eq.id && e.layer === eq.layer,
+          );
+          if (idx >= 0) {
+            playerItems.splice(idx, 1);
+            if (playerItems.length === 0) delete gameState.equipment[zone];
+            else gameState.equipment[zone] = playerItems;
+          }
         }
       }
-    });
+    }
   }
 
   private applyDamage(
@@ -133,17 +151,19 @@ export class CombatSystem {
     const cost = skill.staminaCost ?? 0;
     attacker.stamina = Math.max(0, attacker.stamina - cost);
 
+    const zone = skill.zone ?? 'torso';
+
     if (skill.damageType === DamageType.Desire) {
       let dmg = base + attacker.attack - (target.lustDefense ?? 0);
       if (dmg < 0) dmg = 0;
       target.desire += dmg;
     } else {
       const beforeArmor = base + attacker.attack - target.defense;
-      let dmg = beforeArmor - this.armorProtection(target);
+      let dmg = beforeArmor - this.armorProtection(target, zone);
       if (dmg < 0) dmg = 0;
       target.resistance -= dmg;
       if (dmg < beforeArmor) {
-        this.handleDurability(target);
+        this.handleDurability(target, zone);
       }
     }
   }
