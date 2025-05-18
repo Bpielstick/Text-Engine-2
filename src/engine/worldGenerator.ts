@@ -121,9 +121,12 @@ export function generateRegion(regionId: string): void {
     if (region.lootPool && region.lootPool.length > 0) {
       if (mulberry32() < 0.2) {
         const item = pickRandom(region.lootPool);
+        const flag = `${roomId}_${item}_taken`;
         const take: Choice = {
+          id: flag,
           text: `take ${item}`,
-          effects: { addItem: item },
+          requires: { flag, value: false },
+          effects: [{ addItem: item }, { set: { [flag]: true } }],
         };
         scene.choices.push(take);
       }

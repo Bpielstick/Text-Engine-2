@@ -93,8 +93,11 @@ export class GameState {
   }
 
   private random(): number {
-    this.world.rngRuntime += 1;
-    return Math.random();
+    // Mulberry32 PRNG using rngRuntime as state
+    let t = (this.world.rngRuntime += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
   private hasItem(id: string): boolean {
@@ -122,9 +125,9 @@ export class GameState {
       const c = cond as any as { any: Condition[] };
       return c.any.some((sub) => this.check(sub));
     }
-    if ((cond as any).var !== undefined) {
-      const c = cond as any as { var: string; min?: number; max?: number };
-      const val = Number(this.vars[c.var] ?? 0);
+    if ((cond as any).stat !== undefined) {
+      const c = cond as any as { stat: string; min?: number; max?: number };
+      const val = Number(this.vars[c.stat] ?? 0);
       if (c.min !== undefined && val < c.min) return false;
       if (c.max !== undefined && val > c.max) return false;
       return true;

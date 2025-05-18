@@ -66,6 +66,7 @@ export class CombatSystem {
   private running = false;
   private onWin?: string;
   private onLose?: string;
+  private enemyIds: string[] = [];
 
   // ----- utilities -----
   private pickRandom<T>(arr: T[]): T {
@@ -187,13 +188,13 @@ export class CombatSystem {
     if (this.enemies.length === 0) {
       IN_COMBAT = false;
       this.running = false;
-      const xp = this.enemies.reduce((s, e) => {
-        const base = contentLoader.creatures.get(e.id);
+      const xp = this.enemyIds.reduce((s, id) => {
+        const base = contentLoader.creatures.get(id);
         return s + (base?.xpReward ?? 0);
       }, 0);
       const loot: string[] = [];
-      this.enemies.forEach((e) => {
-        const base = contentLoader.creatures.get(e.id);
+      this.enemyIds.forEach((id) => {
+        const base = contentLoader.creatures.get(id);
         base?.drops?.forEach((d) => loot.push(d));
       });
       loot.forEach((id) => gameState.apply({ addItem: id }));
@@ -249,6 +250,7 @@ export class CombatSystem {
 
     this.allies = [player, ...gameState.companions.map((c) => this.createActor(c.id))];
     this.enemies = enemiesIds.map((id) => this.createActor(id));
+    this.enemyIds = enemiesIds.slice();
     this.order = [...this.allies, ...this.enemies];
     this.turnIdx = 0;
     this.onWin = onWin;
