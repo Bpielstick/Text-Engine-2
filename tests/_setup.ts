@@ -44,6 +44,19 @@ const scenes = [
     schemaVersion: 1,
   },
   { id: 'B', text: 'Scene B', choices: [], schemaVersion: 1 },
+  { id: 'C', text: 'Scene C', choices: [], schemaVersion: 1 },
+  {
+    id: 'R',
+    text: 'Random',
+    choices: [
+      {
+        id: 'toBC',
+        text: 'Next',
+        nextScene: { randomPool: [{ value: 'B' }, { value: 'C' }] },
+      },
+    ],
+    schemaVersion: 1,
+  },
   { id: 'template', text: 'Template', choices: [], schemaVersion: 1 },
 ];
 const skills = [
@@ -74,6 +87,18 @@ const creatures = [
   {
     id: 'enemy',
     name: 'Enemy',
+    maxResistance: 1,
+    maxDesire: 10,
+    attack: 0,
+    defense: 0,
+    stamina: 1,
+    skills: ['atk1'],
+    xpReward: 1,
+    schemaVersion: 1,
+  },
+  {
+    id: 'enemy2',
+    name: 'Enemy2',
     maxResistance: 1,
     maxDesire: 10,
     attack: 0,
