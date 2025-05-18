@@ -67,6 +67,7 @@ export class CombatSystem {
   private onWin?: string;
   private onLose?: string;
   private enemyIds: string[] = [];
+  private playerActor?: CombatActor;
 
   // ----- utilities -----
   private pickRandom<T>(arr: T[]): T {
@@ -191,6 +192,22 @@ export class CombatSystem {
     gameState.unsummonCompanions();
   }
 
+  private awardPlayerXp(xp: number): void {
+    const p = gameState.player;
+    p.xp += xp;
+    while (p.xpToNext && p.xp >= p.xpToNext) {
+      p.xp -= p.xpToNext;
+      p.level += 1;
+    }
+  }
+
+  private syncPlayerStats(): void {
+    if (!this.playerActor) return;
+    gameState.player.resistance = this.playerActor.resistance;
+    gameState.player.desire = this.playerActor.desire;
+    gameState.player.stamina = this.playerActor.stamina;
+  }
+
   private processAI(actor: CombatActor): void {
     const usable = this.getUsableSkills(actor);
     if (usable.length === 0) return;
@@ -229,6 +246,8 @@ export class CombatSystem {
         base?.drops?.forEach((d) => loot.push(d));
       });
       loot.forEach((id) => gameState.apply({ addItem: id }));
+      this.syncPlayerStats();
+      this.awardPlayerXp(xp);
       this.awardCompanionXp(xp);
       return { result: 'win', xp, loot };
     }
@@ -236,6 +255,8 @@ export class CombatSystem {
     if (!player || player.resistance <= 0 || player.desire >= player.maxDesire) {
       IN_COMBAT = false;
       this.running = false;
+      this.syncPlayerStats();
+      this.awardPlayerXp(0);
       this.awardCompanionXp(0);
       return { result: 'lose', xp: 0, loot: [] };
     }
@@ -280,6 +301,10 @@ export class CombatSystem {
 
     const playerBaseId = contentLoader.config.playerCharacter;
     const player = this.createActor(playerBaseId, gameState.equipment);
+    player.resistance = gameState.player.resistance;
+    player.desire = gameState.player.desire;
+    player.stamina = gameState.player.stamina;
+    this.playerActor = player;
 
     this.allies = [player, ...gameState.companions.map((c) => this.createActor(c.id))];
     this.enemies = enemiesIds.map((id) => this.createActor(id));
