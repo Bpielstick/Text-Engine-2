@@ -17,16 +17,76 @@ const EngineAPI = {
     return narrativeManager.chooseOption(id);
   },
   useItem(id: string) {
-    /* remove item, apply onUse via GameState */
+    const invIdx = gameState.inventory.findIndex((it) => it.id === id);
+    if (invIdx < 0) return;
+    const inst = gameState.inventory[invIdx];
+    inst.qty -= 1;
+    if (inst.qty <= 0) gameState.inventory.splice(invIdx, 1);
+
+    const item = contentLoader.items.get(id);
+    if (!item) return;
+    if (item.onUse) {
+      gameState.apply(item.onUse);
+    }
+    if (item.type === 'essenceCore' && item.summonCreature) {
+      const base = contentLoader.creatures.get(item.summonCreature);
+      if (base) {
+        gameState.companions.push({
+          id: item.summonCreature,
+          level: item.level ?? base.level ?? 1,
+          xp: item.xp ?? base.xp ?? 0,
+          xpToNext: item.xpToNext ?? base.xpToNext ?? 0,
+          currentResistance: base.maxResistance,
+          currentDesire: 0,
+          currentStamina: base.stamina,
+        });
+      }
+    }
   },
   equipItem(id: string) {
-    /* move from inventory to equipment */
+    const invIdx = gameState.inventory.findIndex((it) => it.id === id);
+    if (invIdx < 0) return;
+    const item = contentLoader.items.get(id);
+    if (!item || !item.slot) return;
+
+    const inst = gameState.inventory[invIdx];
+    inst.qty -= 1;
+    if (inst.qty <= 0) gameState.inventory.splice(invIdx, 1);
+
+    const prev = gameState.equipment[item.slot];
+    if (prev) {
+      const existing = gameState.inventory.find((it) => it.id === prev.id);
+      if (existing) existing.qty += 1;
+      else gameState.inventory.push({ id: prev.id, qty: 1 });
+    }
+
+    gameState.equipment[item.slot] = {
+      id: item.id,
+      layer: item.layer,
+      durability: item.maxDurability,
+    };
   },
   unequipItem(id: string) {
-    /* reverse of equip */
+    const entry = Object.entries(gameState.equipment).find(
+      ([, eq]) => eq.id === id,
+    );
+    if (!entry) return;
+    const [slot, eq] = entry;
+    delete gameState.equipment[slot];
+
+    const existing = gameState.inventory.find((it) => it.id === eq.id);
+    if (existing) existing.qty += 1;
+    else gameState.inventory.push({ id: eq.id, qty: 1 });
   },
   getPlayerStats() {
-    /* return object of current stats */
+    const base = contentLoader.creatures.get(contentLoader.config.playerCharacter);
+    return {
+      maxResistance: base?.maxResistance ?? 0,
+      maxDesire: base?.maxDesire ?? 0,
+      stamina: base?.stamina ?? 0,
+      attack: base?.attack ?? 0,
+      defense: base?.defense ?? 0,
+    };
   },
   getInventory() {
     return gameState.inventory;

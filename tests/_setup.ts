@@ -70,7 +70,21 @@ const skills = [
   },
 ];
 const items = [
-  { id: 'sword', name: 'Sword', type: 'weapon', schemaVersion: 1 },
+  { id: 'sword', name: 'Sword', type: 'weapon', slot: 'hand', schemaVersion: 1 },
+  {
+    id: 'potion',
+    name: 'Potion',
+    type: 'consumable',
+    onUse: { set: { healed: true } },
+    schemaVersion: 1,
+  },
+  {
+    id: 'core_enemy',
+    name: 'Enemy Core',
+    type: 'essenceCore',
+    summonCreature: 'enemy',
+    schemaVersion: 1,
+  },
 ];
 const creatures = [
   {
