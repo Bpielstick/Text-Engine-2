@@ -2,7 +2,14 @@ import { ContentLoader, contentLoader } from './contentLoader';
 import { GameConfig, Condition, Effect } from './types';
 
 // ---------- helper types ----------
-export interface ItemInstance { id: string; qty: number; durability?: number }
+export interface ItemInstance {
+  id: string;
+  qty: number;
+  durability?: number;
+  level?: number;
+  xp?: number;
+  xpToNext?: number;
+}
 export interface EquippedItem { id: string; layer?: number; durability?: number }
 export interface CompanionInstance {
   id: string;
@@ -12,6 +19,7 @@ export interface CompanionInstance {
   currentResistance: number;
   currentDesire: number;
   currentStamina: number;
+  core?: ItemInstance;
 }
 export interface RegionMutation {
   defeatedEnemies: Set<string>;
@@ -98,6 +106,24 @@ export class GameState {
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  summonFromCore(core: ItemInstance): void {
+    const baseItem = this.loader.items.get(core.id);
+    if (!baseItem?.summonCreature) return;
+    const creature = this.loader.creatures.get(baseItem.summonCreature);
+    if (!creature) return;
+    const companion: CompanionInstance = {
+      id: baseItem.summonCreature,
+      level: core.level ?? baseItem.level ?? creature.level ?? 1,
+      xp: core.xp ?? baseItem.xp ?? creature.xp ?? 0,
+      xpToNext: core.xpToNext ?? baseItem.xpToNext ?? creature.xpToNext ?? 1,
+      currentResistance: creature.maxResistance,
+      currentDesire: 0,
+      currentStamina: creature.stamina,
+      core,
+    };
+    this.companions.push(companion);
   }
 
   private hasItem(id: string): boolean {
@@ -238,12 +264,23 @@ export class GameState {
   }
 
   // ----- internal helpers -----
-  private addItem(id: string): void {
-    const existing = this.inventory.find((it) => it.id === id);
-    if (existing) {
-      existing.qty += 1;
-    } else {
+  private addItem(id: string | ItemInstance): void {
+    if (typeof id === 'string') {
+      const existing = this.inventory.find((it) => it.id === id);
+      if (existing) {
+        existing.qty += 1;
+        return;
+      }
       this.inventory.push({ id, qty: 1 });
+      return;
+    }
+
+    const item = id;
+    const existing = this.inventory.find((it) => it.id === item.id && !it.level && !item.level);
+    if (existing) {
+      existing.qty += item.qty;
+    } else {
+      this.inventory.push({ ...item });
     }
   }
 
@@ -256,6 +293,17 @@ export class GameState {
         this.inventory.splice(idx, 1);
       }
     }
+  }
+
+  unsummonCompanions(): void {
+    this.companions = this.companions.filter((c) => {
+      if (!c.core) return true;
+      c.core.level = c.level;
+      c.core.xp = c.xp;
+      c.core.xpToNext = c.xpToNext;
+      this.addItem(c.core);
+      return false;
+    });
   }
 }
 
