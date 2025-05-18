@@ -5,7 +5,7 @@ export class ContentError extends Error {
         this.name = 'ContentError';
     }
 }
-const ID_REGEX = /^[a-z][A-Za-z0-9]*$/;
+const ID_REGEX = /^[a-z][A-Za-z0-9_]*$/;
 function assert(condition, message) {
     if (!condition) {
         throw new ContentError(message);
@@ -37,7 +37,7 @@ export class ContentLoader {
         assert(Array.isArray(data), `${context} must be an array`);
         const out = [];
         data.forEach((obj, i) => {
-            assert(obj.version === '1.0', `${context}[${i}] version must be 1.0`);
+            assert(obj.schemaVersion === 1, `${context}[${i}] schemaVersion must be 1`);
             assert(ID_REGEX.test(obj.id), `${context}[${i}] invalid id '${obj.id}'`);
             out.push({ ...obj });
         });
@@ -45,7 +45,7 @@ export class ContentLoader {
     }
     loadObject(data, context) {
         assert(data && typeof data === 'object' && !Array.isArray(data), `${context} must be an object`);
-        assert(data.version === '1.0', `${context} version must be 1.0`);
+        assert(data.schemaVersion === 1, `${context} schemaVersion must be 1`);
         return data;
     }
     arrayToMap(arr, name) {

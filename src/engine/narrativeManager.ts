@@ -99,55 +99,58 @@ export class NarrativeManager {
 
     const choice = entry.choice;
     this.isResolving = true;
-
-    if (choice.effects) {
-      this.state.apply(choice.effects);
-      if (choice.id && choice.id.endsWith('_taken')) {
-        const room = this.parseRoom(this.currentSceneId);
-        if (room) {
-          const effects = Array.isArray(choice.effects)
-            ? choice.effects
-            : [choice.effects];
-          const add = effects.find((e) => (e as any).addItem);
-          const item = add && (add as any).addItem;
-          if (item && typeof item === 'string') {
-            const mut = this.state.world.regions[room.regionId]?.mutations[room.roomId];
-            mut?.collectedLoot.add(item);
+    try {
+      if (choice.effects) {
+        this.state.apply(choice.effects);
+        if (choice.id && choice.id.endsWith('_taken')) {
+          const room = this.parseRoom(this.currentSceneId);
+          if (room) {
+            const effects = Array.isArray(choice.effects)
+              ? choice.effects
+              : [choice.effects];
+            const add = effects.find((e) => (e as any).addItem);
+            const item = add && (add as any).addItem;
+            if (item && typeof item === 'string') {
+              const mut =
+                this.state.world.regions[room.regionId]?.mutations[room.roomId];
+              mut?.collectedLoot.add(item);
+            }
           }
         }
       }
-    }
 
-    if (choice.encounter) {
-      const loc = this.parseRoom(this.currentSceneId);
-      this.combatRoomId = loc?.roomId;
-      this.combatRegionId = loc?.regionId;
-      this.combatOnWin = choice.onWin;
-      this.combatOnLose = choice.onLose;
-      const result = this.combat.start(
-        choice.encounter,
-        choice.onWin,
-        choice.onLose,
-      );
-      this.isResolving = false;
-      return result;
-    }
 
-    let nextScene = this.currentSceneId;
-    if (choice.nextScene) {
-      if (typeof choice.nextScene === 'string') {
-        nextScene = choice.nextScene;
-      } else {
-        nextScene = this.pickRandom(choice.nextScene.randomPool);
+      if (choice.encounter) {
+        const loc = this.parseRoom(this.currentSceneId);
+        this.combatRoomId = loc?.roomId;
+        this.combatRegionId = loc?.regionId;
+        this.combatOnWin = choice.onWin;
+        this.combatOnLose = choice.onLose;
+        const result = this.combat.start(
+          choice.encounter,
+          choice.onWin,
+          choice.onLose,
+        );
+        return result;
       }
-    }
 
-    if (scene.onExit) {
-      this.state.apply(scene.onExit);
+      let nextScene = this.currentSceneId;
+      if (choice.nextScene) {
+        if (typeof choice.nextScene === 'string') {
+          nextScene = choice.nextScene;
+        } else {
+          nextScene = this.pickRandom(choice.nextScene.randomPool);
+        }
+      }
+
+      if (scene.onExit) {
+        this.state.apply(scene.onExit);
+      }
+      const out = this.start(nextScene);
+      return out;
+    } finally {
+      this.isResolving = false;
     }
-    const out = this.start(nextScene);
-    this.isResolving = false;
-    return out;
   }
 
   private pickRandom<T>(pool: RandomPool<T>[]): T {

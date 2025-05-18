@@ -1,11 +1,11 @@
-import { IN_COMBAT } from './combatSystem';
+import combatSystem from './combatSystem';
 import { gameState } from './gameState';
 import { contentLoader } from './contentLoader';
 import { generateRegion } from './worldGenerator';
 import narrativeManager from './narrativeManager';
 export function saveGame(slot = 0) {
-    if (IN_COMBAT && !contentLoader.config.canSaveInCombat)
-        throw 'CANNOT_SAVE';
+    if (combatSystem.isActive() && !contentLoader.config.canSaveInCombat)
+        throw new Error('CANNOT_SAVE_IN_COMBAT');
     const snapshot = {
         engineVersion: '1.0',
         timestamp: Date.now(),

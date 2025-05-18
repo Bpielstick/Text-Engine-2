@@ -24,7 +24,7 @@ export class ContentError extends Error {
   }
 }
 
-const ID_REGEX = /^[a-z][A-Za-z0-9]*$/;
+const ID_REGEX = /^[a-z][A-Za-z0-9_]*$/;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -58,23 +58,32 @@ export class ContentLoader {
     this.validateCrossReferences();
   }
 
-  private loadArray<T extends { id: string; version: string }>(
+  private loadArray<T extends { id: string; schemaVersion: number }>(
     data: readonly T[],
     context: string,
   ): T[] {
     assert(Array.isArray(data), `${context} must be an array`);
     const out: T[] = [];
     data.forEach((obj, i) => {
-      assert(obj.version === '1.0', `${context}[${i}] version must be 1.0`);
+      assert(
+        obj.schemaVersion === 1,
+        `${context}[${i}] schemaVersion must be 1`,
+      );
       assert(ID_REGEX.test(obj.id), `${context}[${i}] invalid id '${obj.id}'`);
       out.push({ ...(obj as any) });
     });
     return out;
   }
 
-  private loadObject<T extends { version?: string }>(data: T, context: string): T {
+  private loadObject<T extends { schemaVersion?: number }>(
+    data: T,
+    context: string,
+  ): T {
     assert(data && typeof data === 'object' && !Array.isArray(data), `${context} must be an object`);
-    assert((data as any).version === '1.0', `${context} version must be 1.0`);
+    assert(
+      (data as any).schemaVersion === 1,
+      `${context} schemaVersion must be 1`,
+    );
     return data as T;
   }
 

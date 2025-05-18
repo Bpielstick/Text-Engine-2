@@ -73,6 +73,10 @@ export class CombatSystem {
     return this.enemyIds.slice();
   }
 
+  isActive(): boolean {
+    return this.running;
+  }
+
   // ----- utilities -----
   private pickRandom<T>(arr: T[]): T {
     return arr[Math.floor(gameState.random() * arr.length)];
@@ -130,7 +134,7 @@ export class CombatSystem {
     return item?.protection ?? 0;
   }
 
-  private handleDurability(actor: CombatActor, zone: string): void {
+  private handleDurability(actor: CombatActor, zone: string, amount = 1): void {
     const items = actor.equipment[zone];
     if (!items || items.length === 0) return;
     let outerIdx = 0;
@@ -141,7 +145,7 @@ export class CombatSystem {
     const item = contentLoader.items.get(eq.id);
     if (!item?.protection) return;
     if (eq.durability !== undefined) {
-      eq.durability -= 1;
+      eq.durability -= amount;
     }
     if (eq.durability !== undefined && eq.durability <= 0) {
       items.splice(outerIdx, 1);
@@ -180,11 +184,13 @@ export class CombatSystem {
       target.desire += dmg;
     } else {
       const beforeArmor = base + attacker.attack - target.defense;
-      let dmg = beforeArmor - this.armorProtection(target, zone);
+      const armor = this.armorProtection(target, zone);
+      let dmg = beforeArmor - armor;
       if (dmg < 0) dmg = 0;
       target.resistance -= dmg;
-      if (dmg < beforeArmor) {
-        this.handleDurability(target, zone);
+      const blocked = Math.max(beforeArmor - dmg, 0);
+      if (blocked > 0) {
+        this.handleDurability(target, zone, blocked);
       }
     }
   }
