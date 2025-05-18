@@ -4,13 +4,13 @@ export const scenes = [
         id: 'start',
         text: 'You are at the start.',
         choices: [{ id: 'end', text: 'End game', nextScene: 'end' }],
-        version: '1.0',
+        schemaVersion: 1,
     },
     {
         id: 'end',
         text: 'The end.',
         choices: [],
-        version: '1.0',
+        schemaVersion: 1,
     },
 ];
 export const skills = [
@@ -21,7 +21,7 @@ export const skills = [
         damageType: DamageType.Physical,
         baseDamage: 5,
         staminaCost: 0,
-        version: '1.0',
+        schemaVersion: 1,
     },
 ];
 export const items = [
@@ -31,7 +31,7 @@ export const items = [
         type: 'consumable',
         description: 'Heals 10.',
         onUse: { change: { resistance: 10 } },
-        version: '1.0',
+        schemaVersion: 1,
     },
 ];
 export const creatures = [
@@ -48,7 +48,7 @@ export const creatures = [
         xp: 0,
         xpToNext: 100,
         levelUpIncreases: { maxResistance: 5, attack: 1 },
-        version: '1.0',
+        schemaVersion: 1,
     },
     {
         id: 'slime',
@@ -60,7 +60,7 @@ export const creatures = [
         stamina: 5,
         skills: ['basicAttack'],
         xpReward: 10,
-        version: '1.0',
+        schemaVersion: 1,
     },
 ];
 export const regions = [
@@ -70,7 +70,7 @@ export const regions = [
         roomTemplates: ['start'],
         roomCount: 1,
         layout: 'linear',
-        version: '1.0',
+        schemaVersion: 1,
     },
 ];
 export const gameConfig = {
@@ -78,5 +78,5 @@ export const gameConfig = {
     playerCharacter: 'player',
     worldSeed: 1,
     canSaveInCombat: false,
-    version: '1.0',
+        schemaVersion: 1,
 };
