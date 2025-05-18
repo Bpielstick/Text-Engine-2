@@ -162,6 +162,8 @@ const regions = [
     roomCount: 2,
     layout: 'linear',
     roomTemplates: ['template'],
+    encounterPool: ['enemy'],
+    lootPool: ['potion'],
     schemaVersion: 1,
   },
 ];

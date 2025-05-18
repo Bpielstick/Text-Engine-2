@@ -105,30 +105,38 @@ export function generateRegion(regionId: string): void {
     });
 
     if (region.encounterPool && region.encounterPool.length > 0) {
-      if (mulberry32() < 0.3) {
-        const enemy = pickRandom(region.encounterPool);
-        const auto: Choice = {
-          id: 'autoFight',
-          text: '...',
-          encounter: enemy,
-          onWin: `${roomId}_cleared`,
-          onLose: 'defeatScene',
-        };
-        scene.choices.push(auto);
+      const state =
+        gameState.world.regions[regionId]?.mutations[roomId]?.defeatedEnemies;
+      if (!state || state.size === 0) {
+        if (mulberry32() < 0.3) {
+          const enemy = pickRandom(region.encounterPool);
+          const auto: Choice = {
+            id: 'autoFight',
+            text: '...',
+            encounter: enemy,
+            onWin: `${roomId}_cleared`,
+            onLose: 'defeatScene',
+          };
+          scene.choices.push(auto);
+        }
       }
     }
 
     if (region.lootPool && region.lootPool.length > 0) {
-      if (mulberry32() < 0.2) {
-        const item = pickRandom(region.lootPool);
-        const flag = `${roomId}_${item}_taken`;
-        const take: Choice = {
-          id: flag,
-          text: `take ${item}`,
-          requires: { flag, value: false },
-          effects: [{ addItem: item }, { set: { [flag]: true } }],
-        };
-        scene.choices.push(take);
+      const state =
+        gameState.world.regions[regionId]?.mutations[roomId]?.collectedLoot;
+      if (!state || state.size === 0) {
+        if (mulberry32() < 0.2) {
+          const item = pickRandom(region.lootPool);
+          const flag = `${roomId}_${item}_taken`;
+          const take: Choice = {
+            id: flag,
+            text: `take ${item}`,
+            requires: { flag, value: false },
+            effects: [{ addItem: item }, { set: { [flag]: true } }],
+          };
+          scene.choices.push(take);
+        }
       }
     }
   });
@@ -139,10 +147,12 @@ export function generateRegion(regionId: string): void {
     mutations: {},
   };
   rooms.forEach((r) => {
-    regionState.mutations[r] = {
-      defeatedEnemies: new Set<string>(),
-      collectedLoot: new Set<string>(),
-    };
+    if (!regionState.mutations[r]) {
+      regionState.mutations[r] = {
+        defeatedEnemies: new Set<string>(),
+        collectedLoot: new Set<string>(),
+      };
+    }
   });
   gameState.world.regions[regionId] = regionState;
 
