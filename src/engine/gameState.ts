@@ -25,6 +25,14 @@ export interface CompanionInstance {
   currentStamina: number;
   core?: ItemInstance;
 }
+export interface PlayerState {
+  resistance: number;
+  desire: number;
+  stamina: number;
+  level: number;
+  xp: number;
+  xpToNext: number;
+}
 export interface RegionMutation {
   defeatedEnemies: Set<string>;
   collectedLoot: Set<string>;
@@ -43,6 +51,7 @@ export class GameState {
   inventory: ItemInstance[] = [];
   equipment: Record<string, EquippedItem[]> = {};
   companions: CompanionInstance[] = [];
+  player: PlayerState;
   world: {
     seed: number;
     regions: Record<string, RegionState>;
@@ -59,6 +68,16 @@ export class GameState {
       regions: {},
       currentScene: cfg.startScene,
       rngRuntime: 0,
+    };
+
+    const playerBase = loader.creatures.get(cfg.playerCharacter);
+    this.player = {
+      resistance: playerBase?.maxResistance ?? 0,
+      desire: 0,
+      stamina: playerBase?.stamina ?? 0,
+      level: playerBase?.level ?? 1,
+      xp: playerBase?.xp ?? 0,
+      xpToNext: playerBase?.xpToNext ?? 0,
     };
 
     cfg.startingInventory?.forEach((id) => this.addItem(id));
@@ -215,6 +234,7 @@ export class GameState {
       inventory: this.inventory,
       equipment: this.equipment,
       companions: this.companions,
+      player: this.player,
       world: {
         seed: this.world.seed,
         currentScene: this.world.currentScene,
@@ -246,6 +266,15 @@ export class GameState {
     this.inventory = data.inventory || [];
     this.equipment = data.equipment || {};
     this.companions = data.companions || [];
+    const base = this.loader.creatures.get(this.config.playerCharacter);
+    this.player = data.player || {
+      resistance: base?.maxResistance ?? 0,
+      desire: 0,
+      stamina: base?.stamina ?? 0,
+      level: base?.level ?? 1,
+      xp: base?.xp ?? 0,
+      xpToNext: base?.xpToNext ?? 0,
+    };
     this.world = {
       seed: data.world.seed,
       currentScene: data.world.currentScene,
