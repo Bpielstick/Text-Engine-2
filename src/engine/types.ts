@@ -1,25 +1,10 @@
-
-// TypeScript interfaces and enums for game content
-
 export interface RandomPool<T> {
   value: T;
   weight?: number; // default = 1
 }
 
-// --- Scenes ---
+// --- Conditions ---
 export interface ConditionFlag {
-  flag: string;
-  value: boolean;
-}
-export interface ConditionStat {
-
-export interface RandomPool<T>{
-  value: T;
-  weight?: number;
-}
-
-// --- Scenes ---
-export interface ConditionFlag{
   flag: string;
   value: boolean;
 }
@@ -27,26 +12,29 @@ export interface ConditionFlag{
 export interface ConditionItem {
   item: string;
 }
+
 export interface ConditionChance {
   chance: number; // percent 0-100
 }
+
 export interface ConditionAny {
   any: Condition[];
 }
-=======
 
-export interface ConditionItem{
-  item: string;
+export interface ConditionStat {
+  var: string;
+  min?: number;
+  max?: number;
 }
 
-export interface ConditionChance{
-  chance: number; // percent 0-100
-}
+export type Condition =
+  | ConditionFlag
+  | ConditionItem
+  | ConditionChance
+  | ConditionAny
+  | ConditionStat;
 
-export interface ConditionAny{
-  any: Condition[];
-}
-
+// --- Effects ---
 export interface EffectSet {
   set: Record<string, boolean | number | string>;
 }
@@ -62,27 +50,15 @@ export interface EffectRemoveItem {
 export interface EffectReset {
   reset: true;
 }
-=======
-export interface EffectSet{
-  set: Record<string, boolean | number | string>;
-}
 
-export interface EffectChange{
-  change: Record<string, number>; // delta ±
-}
+export type Effect =
+  | EffectSet
+  | EffectChange
+  | EffectAddItem
+  | EffectRemoveItem
+  | EffectReset;
 
-export interface EffectAddItem{
-  addItem: string | string[];
-}
-
-export interface EffectRemoveItem{
-  removeItem: string | string[];
-}
-
-export interface EffectReset{
-  reset: true;
-}
-
+// --- Scenes ---
 export interface Choice {
   id?: string;
   text: string;
@@ -197,4 +173,5 @@ export interface GameConfig {
   worldSeed: number;
   canSaveInCombat: boolean;
   version: "1.0";
+  schemaVersion: 1;
 }
