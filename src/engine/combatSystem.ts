@@ -69,6 +69,10 @@ export class CombatSystem {
   private enemyIds: string[] = [];
   private playerActor?: CombatActor;
 
+  getCurrentEnemyIds(): string[] {
+    return this.enemyIds.slice();
+  }
+
   // ----- utilities -----
   private pickRandom<T>(arr: T[]): T {
     return arr[Math.floor(gameState.random() * arr.length)];

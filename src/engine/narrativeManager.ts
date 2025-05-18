@@ -19,6 +19,8 @@ export class NarrativeManager {
   private isResolving = false;
   private combatOnWin?: string;
   private combatOnLose?: string;
+  private combatRoomId?: string;
+  private combatRegionId?: string;
 
   constructor(
     loader: ContentLoader,
@@ -59,6 +61,14 @@ export class NarrativeManager {
     return list;
   }
 
+  private parseRoom(id: string): { regionId: string; roomId: string } | null {
+    const m = id.match(/^(.+_room\d+)/);
+    if (!m) return null;
+    const roomId = m[1];
+    const idx = roomId.indexOf('_room');
+    return { regionId: roomId.slice(0, idx), roomId };
+  }
+
   getSceneOutput(): SceneOutput {
     const scene = this.loader.scenes.get(this.currentSceneId);
     if (!scene) {
@@ -92,9 +102,26 @@ export class NarrativeManager {
 
     if (choice.effects) {
       this.state.apply(choice.effects);
+      if (choice.id && choice.id.endsWith('_taken')) {
+        const room = this.parseRoom(this.currentSceneId);
+        if (room) {
+          const effects = Array.isArray(choice.effects)
+            ? choice.effects
+            : [choice.effects];
+          const add = effects.find((e) => (e as any).addItem);
+          const item = add && (add as any).addItem;
+          if (item && typeof item === 'string') {
+            const mut = this.state.world.regions[room.regionId]?.mutations[room.roomId];
+            mut?.collectedLoot.add(item);
+          }
+        }
+      }
     }
 
     if (choice.encounter) {
+      const loc = this.parseRoom(this.currentSceneId);
+      this.combatRoomId = loc?.roomId;
+      this.combatRegionId = loc?.regionId;
       this.combatOnWin = choice.onWin;
       this.combatOnLose = choice.onLose;
       const result = this.combat.start(
@@ -142,12 +169,23 @@ export class NarrativeManager {
       }
       let next = this.currentSceneId;
       if ((result as any).result === 'win') {
+        if (this.combatRegionId && this.combatRoomId) {
+          const mut =
+            this.state.world.regions[this.combatRegionId]?.mutations[
+              this.combatRoomId
+            ];
+          this.combat
+            .getCurrentEnemyIds()
+            .forEach((id) => mut?.defeatedEnemies.add(id));
+        }
         next = this.combatOnWin ?? next;
       } else {
         next = this.combatOnLose ?? next;
       }
       this.combatOnWin = undefined;
       this.combatOnLose = undefined;
+      this.combatRoomId = undefined;
+      this.combatRegionId = undefined;
       return this.start(next);
     }
     return result as any;

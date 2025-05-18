@@ -107,9 +107,12 @@ export function generateRegion(regionId: string): void {
     if (region.encounterPool && region.encounterPool.length > 0) {
       const state =
         gameState.world.regions[regionId]?.mutations[roomId]?.defeatedEnemies;
-      if (!state || state.size === 0) {
+      const pool = region.encounterPool.filter(
+        (e) => !state || !state.has(e),
+      );
+      if (pool.length > 0 && (!state || state.size === 0)) {
         if (mulberry32() < 0.3) {
-          const enemy = pickRandom(region.encounterPool);
+          const enemy = pickRandom(pool);
           const auto: Choice = {
             id: 'autoFight',
             text: '...',
@@ -125,9 +128,10 @@ export function generateRegion(regionId: string): void {
     if (region.lootPool && region.lootPool.length > 0) {
       const state =
         gameState.world.regions[regionId]?.mutations[roomId]?.collectedLoot;
-      if (!state || state.size === 0) {
+      const pool = region.lootPool.filter((i) => !state || !state.has(i));
+      if (pool.length > 0 && (!state || state.size === 0)) {
         if (mulberry32() < 0.2) {
-          const item = pickRandom(region.lootPool);
+          const item = pickRandom(pool);
           const flag = `${roomId}_${item}_taken`;
           const take: Choice = {
             id: flag,
