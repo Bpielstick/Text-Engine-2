@@ -27,12 +27,22 @@ export interface ConditionStat {
   max?: number;
 }
 
+export interface ConditionItemEquipped {
+  itemEquipped: string;
+}
+
+export interface ConditionLevel {
+  level: number;
+}
+
 export type Condition =
   | ConditionFlag
   | ConditionItem
   | ConditionChance
   | ConditionAny
-  | ConditionStat;
+  | ConditionStat
+  | ConditionItemEquipped
+  | ConditionLevel;
 
 // --- Effects ---
 export interface EffectSet {

@@ -169,6 +169,12 @@ export class GameState {
     return this.inventory.some((it) => it.id === id && it.qty > 0);
   }
 
+  private hasEquippedItem(id: string): boolean {
+    return Object.values(this.equipment).some((arr) =>
+      arr.some((eq) => eq.id === id),
+    );
+  }
+
   check(cond: Condition | Condition[]): boolean {
     if (Array.isArray(cond)) {
       return cond.every((c) => this.check(c));
@@ -181,6 +187,10 @@ export class GameState {
     if ((cond as any).item !== undefined) {
       const c = cond as any as { item: string };
       return this.hasItem(c.item);
+    }
+    if ((cond as any).itemEquipped !== undefined) {
+      const c = cond as any as { itemEquipped: string };
+      return this.hasEquippedItem(c.itemEquipped);
     }
     if ((cond as any).chance !== undefined) {
       const c = cond as any as { chance: number };
@@ -196,6 +206,10 @@ export class GameState {
       if (c.min !== undefined && val < c.min) return false;
       if (c.max !== undefined && val > c.max) return false;
       return true;
+    }
+    if ((cond as any).level !== undefined) {
+      const c = cond as any as { level: number };
+      return this.player.level >= c.level;
     }
     return false;
   }
