@@ -97,6 +97,8 @@ export interface Skill {
   name: string;
   description?: string;
   targetType: TargetType;
+  /** Optional hit zone, defaults to 'torso' */
+  zone?: string;
   damageType?: DamageType;
   baseDamage?: number;
   staminaCost?: number;

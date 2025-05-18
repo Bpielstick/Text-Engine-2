@@ -10,7 +10,11 @@ export interface ItemInstance {
   xp?: number;
   xpToNext?: number;
 }
-export interface EquippedItem { id: string; layer?: number; durability?: number }
+export interface EquippedItem {
+  id: string;
+  layer?: number;
+  durability?: number;
+}
 export interface CompanionInstance {
   id: string;
   level: number;
@@ -37,7 +41,7 @@ export class GameState {
   private vars: Record<string, number | boolean | string> = {};
 
   inventory: ItemInstance[] = [];
-  equipment: Record<string, EquippedItem> = {};
+  equipment: Record<string, EquippedItem[]> = {};
   companions: CompanionInstance[] = [];
   world: {
     seed: number;
@@ -61,7 +65,7 @@ export class GameState {
 
     if (cfg.startingEquipment) {
       Object.entries(cfg.startingEquipment).forEach(([slot, id]) => {
-        this.equipment[slot] = { id };
+        this.equipment[slot] = [{ id }];
       });
     }
 

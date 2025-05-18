@@ -44,30 +44,41 @@ const EngineAPI = {
     inst.qty -= 1;
     if (inst.qty <= 0) gameState.inventory.splice(invIdx, 1);
 
-    const prev = gameState.equipment[item.slot];
-    if (prev) {
+    const slot = item.slot;
+    const items = gameState.equipment[slot] || [];
+    const replaceIdx = items.findIndex(
+      (eq) => (eq.layer ?? 0) === (item.layer ?? 0),
+    );
+    if (replaceIdx >= 0) {
+      const prev = items[replaceIdx];
       const existing = gameState.inventory.find((it) => it.id === prev.id);
       if (existing) existing.qty += 1;
       else gameState.inventory.push({ id: prev.id, qty: 1 });
+      items.splice(replaceIdx, 1);
     }
 
-    gameState.equipment[item.slot] = {
+    items.push({
       id: item.id,
       layer: item.layer,
       durability: item.maxDurability,
-    };
+    });
+    items.sort((a, b) => (b.layer ?? 0) - (a.layer ?? 0));
+    gameState.equipment[slot] = items;
   },
   unequipItem(id: string) {
-    const entry = Object.entries(gameState.equipment).find(
-      ([, eq]) => eq.id === id,
-    );
-    if (!entry) return;
-    const [slot, eq] = entry;
-    delete gameState.equipment[slot];
-
-    const existing = gameState.inventory.find((it) => it.id === eq.id);
-    if (existing) existing.qty += 1;
-    else gameState.inventory.push({ id: eq.id, qty: 1 });
+    for (const [slot, arr] of Object.entries(gameState.equipment)) {
+      const idx = arr.findIndex((eq) => eq.id === id);
+      if (idx >= 0) {
+        const eq = arr[idx];
+        arr.splice(idx, 1);
+        if (arr.length === 0) delete gameState.equipment[slot];
+        else gameState.equipment[slot] = arr;
+        const existing = gameState.inventory.find((it) => it.id === eq.id);
+        if (existing) existing.qty += 1;
+        else gameState.inventory.push({ id: eq.id, qty: 1 });
+        break;
+      }
+    }
   },
   getPlayerStats() {
     const base = contentLoader.creatures.get(contentLoader.config.playerCharacter);
