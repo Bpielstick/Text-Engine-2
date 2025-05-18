@@ -76,7 +76,7 @@ export interface Scene {
   choices: Choice[];
   onEnter?: Effect[];
   onExit?: Effect[];
-  schemaVersion: 1;
+  version: "1.0";
 }
 
 // --- Skills ---
@@ -105,7 +105,7 @@ export interface Skill {
   cooldown?: number;
   effects?: Effect | Effect[];
   requires?: Condition | Condition[];
-  schemaVersion: 1;
+  version: "1.0";
 }
 
 // --- Items ---
@@ -126,7 +126,7 @@ export interface Item {
   level?: number;
   xp?: number;
   xpToNext?: number; // core-only
-  schemaVersion: 1;
+  version: "1.0";
 }
 
 // --- Creatures ---
@@ -147,7 +147,7 @@ export interface Creature {
   xp?: number;
   xpToNext?: number;
   levelUpIncreases?: Record<string, number>;
-  schemaVersion: 1;
+  version: "1.0";
 }
 
 // --- Regions ---
@@ -162,7 +162,7 @@ export interface Region {
   encounterPool?: string[];
   lootPool?: string[];
   randomSeed?: number;
-  schemaVersion: 1;
+  version: "1.0";
 }
 
 // --- Game Config ---
@@ -175,5 +175,4 @@ export interface GameConfig {
   worldSeed: number;
   canSaveInCombat: boolean;
   version: "1.0";
-  schemaVersion: 1;
 }

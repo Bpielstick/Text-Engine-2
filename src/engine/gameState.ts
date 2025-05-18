@@ -79,6 +79,13 @@ export class GameState {
       xp: playerBase?.xp ?? 0,
       xpToNext: playerBase?.xpToNext ?? 0,
     };
+    if (playerBase) {
+      (this.player as any).maxResistance = playerBase.maxResistance;
+      (this.player as any).maxDesire = playerBase.maxDesire;
+      (this.player as any).attack = playerBase.attack;
+      (this.player as any).defense = playerBase.defense;
+      (this.player as any).maxStamina = playerBase.stamina;
+    }
 
     cfg.startingInventory?.forEach((id) => this.addItem(id));
 
@@ -98,7 +105,16 @@ export class GameState {
         currentResistance: base?.maxResistance ?? 0,
         currentDesire: 0,
         currentStamina: base?.stamina ?? 0,
-      });
+        ...(base
+          ? {
+              maxResistance: base.maxResistance,
+              maxDesire: base.maxDesire,
+              attack: base.attack,
+              defense: base.defense,
+              maxStamina: base.stamina,
+            }
+          : {}),
+      } as any);
     });
 
     for (const region of loader.regions.values()) {

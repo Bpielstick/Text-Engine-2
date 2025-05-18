@@ -1,5 +1,11 @@
-import fs from 'fs';
-import path from 'path';
+import {
+  scenes as scenesData,
+  skills as skillsData,
+  items as itemsData,
+  creatures as creaturesData,
+  regions as regionsData,
+  gameConfig,
+} from '../content/data';
 import {
   Scene,
   Skill,
@@ -18,15 +24,13 @@ export class ContentError extends Error {
   }
 }
 
-const ID_REGEX = /^[a-z][A-Za-z0-9_]*$/;
+const ID_REGEX = /^[a-z][A-Za-z0-9]*$/;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new ContentError(message);
   }
 }
-
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 export class ContentLoader {
   readonly scenes: Map<string, Scene>;
@@ -36,16 +40,13 @@ export class ContentLoader {
   readonly regions: Map<string, Region>;
   readonly config: GameConfig;
 
-  private readonly baseDir: string;
-
   constructor() {
-    this.baseDir = path.join(__dirname, '../content');
-    const scenes = this.loadArray<Scene>('scenes.json');
-    const skills = this.loadArray<Skill>('skills.json');
-    const items = this.loadArray<Item>('items.json');
-    const creatures = this.loadArray<Creature>('creatures.json');
-    const regions = this.loadArray<Region>('regions.json');
-    const config = this.loadObject<GameConfig>('gameConfig.json');
+    const scenes = this.loadArray<Scene>(scenesData, 'scenes');
+    const skills = this.loadArray<Skill>(skillsData, 'skills');
+    const items = this.loadArray<Item>(itemsData, 'items');
+    const creatures = this.loadArray<Creature>(creaturesData, 'creatures');
+    const regions = this.loadArray<Region>(regionsData, 'regions');
+    const config = this.loadObject<GameConfig>(gameConfig, 'gameConfig');
 
     this.scenes = this.arrayToMap(scenes, 'Scene');
     this.skills = this.arrayToMap(skills, 'Skill');
@@ -57,35 +58,24 @@ export class ContentLoader {
     this.validateCrossReferences();
   }
 
-  private loadArray<T extends { id: string; schemaVersion: number }>(
-    file: string,
+  private loadArray<T extends { id: string; version: string }>(
+    data: readonly T[],
+    context: string,
   ): T[] {
-    const data = this.readJSON(file);
-    assert(Array.isArray(data), `${file} must contain an array`);
+    assert(Array.isArray(data), `${context} must be an array`);
+    const out: T[] = [];
     data.forEach((obj, i) => {
-      assert(
-        obj.schemaVersion === 1,
-        `${file}[${i}] schemaVersion must be 1`,
-      );
-      assert(ID_REGEX.test(obj.id), `${file}[${i}] invalid id '${obj.id}'`);
+      assert(obj.version === '1.0', `${context}[${i}] version must be 1.0`);
+      assert(ID_REGEX.test(obj.id), `${context}[${i}] invalid id '${obj.id}'`);
+      out.push({ ...(obj as any) });
     });
-    return data as T[];
+    return out;
   }
 
-  private loadObject<T extends { schemaVersion?: number }>(file: string): T {
-    const data = this.readJSON(file);
-    assert(
-      data && typeof data === 'object' && !Array.isArray(data),
-      `${file} must contain an object`,
-    );
-    assert(data.schemaVersion === 1, `${file} schemaVersion must be 1`);
+  private loadObject<T extends { version?: string }>(data: T, context: string): T {
+    assert(data && typeof data === 'object' && !Array.isArray(data), `${context} must be an object`);
+    assert((data as any).version === '1.0', `${context} version must be 1.0`);
     return data as T;
-  }
-
-  private readJSON(file: string): any {
-    const full = path.join(this.baseDir, file);
-    const text = fs.readFileSync(full, 'utf8');
-    return JSON.parse(text);
   }
 
   private arrayToMap<T extends { id: string }>(arr: T[], name: string): Map<string, T> {

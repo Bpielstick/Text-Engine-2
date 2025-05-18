@@ -29,6 +29,9 @@ const EngineAPI = {
 
     const item = contentLoader.items.get(id);
     if (!item) return;
+    if (item.requires && !gameState.check(item.requires)) {
+      return;
+    }
     if (item.type === 'essenceCore') {
       gameState.summonFromCore(used);
       return;
@@ -42,6 +45,7 @@ const EngineAPI = {
     if (invIdx < 0) return;
     const item = contentLoader.items.get(id);
     if (!item || !item.slot) return;
+    if (item.requires && !gameState.check(item.requires)) return;
 
     const inst = gameState.inventory[invIdx];
     inst.qty -= 1;
@@ -86,11 +90,11 @@ const EngineAPI = {
   getPlayerStats() {
     const base = contentLoader.creatures.get(contentLoader.config.playerCharacter);
     return {
-      maxResistance: base?.maxResistance ?? 0,
-      maxDesire: base?.maxDesire ?? 0,
-      stamina: base?.stamina ?? 0,
-      attack: base?.attack ?? 0,
-      defense: base?.defense ?? 0,
+      maxResistance: (gameState.player as any).maxResistance ?? base?.maxResistance ?? 0,
+      maxDesire: (gameState.player as any).maxDesire ?? base?.maxDesire ?? 0,
+      stamina: (gameState.player as any).stamina ?? base?.stamina ?? 0,
+      attack: (gameState.player as any).attack ?? base?.attack ?? 0,
+      defense: (gameState.player as any).defense ?? base?.defense ?? 0,
     };
   },
   getInventory() {
