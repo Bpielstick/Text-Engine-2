@@ -17,6 +17,8 @@ export class NarrativeManager {
   private combat: CombatSystem;
   currentSceneId: string;
   private isResolving = false;
+  private combatOnWin?: string;
+  private combatOnLose?: string;
 
   constructor(
     loader: ContentLoader,
@@ -93,6 +95,8 @@ export class NarrativeManager {
     }
 
     if (choice.encounter) {
+      this.combatOnWin = choice.onWin;
+      this.combatOnLose = choice.onLose;
       const result = this.combat.start(
         choice.encounter,
         choice.onWin,
@@ -127,6 +131,26 @@ export class NarrativeManager {
       if (r <= 0) return p.value;
     }
     return pool[pool.length - 1].value;
+  }
+
+  combatAction(actionId: string, targetIdx: number): ChooseResult {
+    const result = this.combat.playerAction(actionId, targetIdx);
+    if ((result as any).result) {
+      const scene = this.loader.scenes.get(this.currentSceneId);
+      if (scene?.onExit) {
+        this.state.apply(scene.onExit);
+      }
+      let next = this.currentSceneId;
+      if ((result as any).result === 'win') {
+        next = this.combatOnWin ?? next;
+      } else {
+        next = this.combatOnLose ?? next;
+      }
+      this.combatOnWin = undefined;
+      this.combatOnLose = undefined;
+      return this.start(next);
+    }
+    return result as any;
   }
 }
 

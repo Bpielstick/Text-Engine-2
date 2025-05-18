@@ -16,6 +16,9 @@ const EngineAPI = {
   chooseOption(id: string) {
     return narrativeManager.chooseOption(id);
   },
+  combatAction(actionId: string, targetIdx: number) {
+    return narrativeManager.combatAction(actionId, targetIdx);
+  },
   useItem(id: string) {
     const invIdx = gameState.inventory.findIndex((it) => it.id === id);
     if (invIdx < 0) return;
