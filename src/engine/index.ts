@@ -1,5 +1,5 @@
 import narrativeManager, { SceneOutput } from './narrativeManager';
-import { gameState } from './gameState';
+import { gameState, ItemInstance } from './gameState';
 import { contentLoader } from './contentLoader';
 import { saveGame, loadGame } from './saveLoad';
 
@@ -20,27 +20,18 @@ const EngineAPI = {
     const invIdx = gameState.inventory.findIndex((it) => it.id === id);
     if (invIdx < 0) return;
     const inst = gameState.inventory[invIdx];
+    const used: ItemInstance = { ...inst, qty: 1 };
     inst.qty -= 1;
     if (inst.qty <= 0) gameState.inventory.splice(invIdx, 1);
 
     const item = contentLoader.items.get(id);
     if (!item) return;
+    if (item.type === 'essenceCore') {
+      gameState.summonFromCore(used);
+      return;
+    }
     if (item.onUse) {
       gameState.apply(item.onUse);
-    }
-    if (item.type === 'essenceCore' && item.summonCreature) {
-      const base = contentLoader.creatures.get(item.summonCreature);
-      if (base) {
-        gameState.companions.push({
-          id: item.summonCreature,
-          level: item.level ?? base.level ?? 1,
-          xp: item.xp ?? base.xp ?? 0,
-          xpToNext: item.xpToNext ?? base.xpToNext ?? 0,
-          currentResistance: base.maxResistance,
-          currentDesire: 0,
-          currentStamina: base.stamina,
-        });
-      }
     }
   },
   equipItem(id: string) {

@@ -160,6 +160,17 @@ export class CombatSystem {
     }
   }
 
+  private awardCompanionXp(xp: number): void {
+    gameState.companions.forEach((c) => {
+      c.xp += xp;
+      while (c.xpToNext && c.xp >= c.xpToNext) {
+        c.xp -= c.xpToNext;
+        c.level += 1;
+      }
+    });
+    gameState.unsummonCompanions();
+  }
+
   private processAI(actor: CombatActor): void {
     const usable = this.getUsableSkills(actor);
     if (usable.length === 0) return;
@@ -198,12 +209,14 @@ export class CombatSystem {
         base?.drops?.forEach((d) => loot.push(d));
       });
       loot.forEach((id) => gameState.apply({ addItem: id }));
+      this.awardCompanionXp(xp);
       return { result: 'win', xp, loot };
     }
     const player = this.allies[0];
     if (!player || player.resistance <= 0 || player.desire >= player.maxDesire) {
       IN_COMBAT = false;
       this.running = false;
+      this.awardCompanionXp(0);
       return { result: 'lose', xp: 0, loot: [] };
     }
 
