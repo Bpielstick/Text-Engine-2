@@ -38,6 +38,7 @@ export function generateRegion(regionId: string): void {
   if (!region) throw new Error(`Region '${regionId}' not found`);
 
   const seed = region.randomSeed ?? hashString(`${gameState.world.seed}${regionId}`);
+  const prevRng = gameState.world.rngRuntime;
   gameState.world.rngRuntime = seed;
 
   const roomCount =
@@ -161,6 +162,7 @@ export function generateRegion(regionId: string): void {
   gameState.world.regions[regionId] = regionState;
 
   generatedRegions.add(regionId);
+  gameState.world.rngRuntime = prevRng;
 }
 
 export function getScene(roomId: string): Scene {

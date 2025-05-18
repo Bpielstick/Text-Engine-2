@@ -81,7 +81,22 @@ export class CombatSystem {
   private createActor(id: string, equipment?: Record<string, EquippedItem[]>): CombatActor {
     const base = contentLoader.creatures.get(id);
     if (!base) throw new Error(`Creature '${id}' not found`);
-    return new CombatActor(base, equipment);
+    let level = base.level ?? 1;
+    if (id === contentLoader.config.playerCharacter) {
+      level = gameState.player.level;
+    } else {
+      const comp = gameState.companions.find((c) => c.id === id);
+      if (comp) level = comp.level;
+    }
+    const leveled: Creature = { ...base } as any;
+    if (base.levelUpIncreases) {
+      for (let i = base.level ?? 1; i < level; i++) {
+        Object.entries(base.levelUpIncreases).forEach(([k, v]) => {
+          (leveled as any)[k] = ((leveled as any)[k] ?? 0) + v;
+        });
+      }
+    }
+    return new CombatActor(leveled, equipment);
   }
 
   private applyEndOfRound(): void {
@@ -100,7 +115,8 @@ export class CombatSystem {
       .filter((s) => {
         const cd = actor.cooldowns[s.id] ?? 0;
         const cost = s.staminaCost ?? 0;
-        return cd <= 0 && cost <= actor.stamina;
+        const reqOk = s.requires ? gameState.check(s.requires) : true;
+        return cd <= 0 && cost <= actor.stamina && reqOk;
       });
   }
 
@@ -191,6 +207,12 @@ export class CombatSystem {
       while (c.xpToNext && c.xp >= c.xpToNext) {
         c.xp -= c.xpToNext;
         c.level += 1;
+        const base = contentLoader.creatures.get(c.id);
+        if (base?.levelUpIncreases) {
+          Object.entries(base.levelUpIncreases).forEach(([k, v]) => {
+            (c as any)[k] = ((c as any)[k] ?? 0) + v;
+          });
+        }
       }
     });
     gameState.unsummonCompanions();
@@ -202,6 +224,13 @@ export class CombatSystem {
     while (p.xpToNext && p.xp >= p.xpToNext) {
       p.xp -= p.xpToNext;
       p.level += 1;
+      const base = contentLoader.creatures.get(contentLoader.config.playerCharacter);
+      if (base?.levelUpIncreases) {
+        Object.entries(base.levelUpIncreases).forEach(([k, v]) => {
+          const curr = (gameState.player as any)[k] ?? (base as any)[k];
+          (gameState.player as any)[k] = curr + v;
+        });
+      }
     }
   }
 
@@ -307,10 +336,21 @@ export class CombatSystem {
     const player = this.createActor(playerBaseId, gameState.equipment);
     player.resistance = gameState.player.resistance;
     player.desire = gameState.player.desire;
-    player.stamina = gameState.player.stamina;
+    player.stamina = player.maxStamina;
+    gameState.player.stamina = player.maxStamina;
     this.playerActor = player;
 
-    this.allies = [player, ...gameState.companions.map((c) => this.createActor(c.id))];
+    this.allies = [
+      player,
+      ...gameState.companions.map((c) => {
+        const actor = this.createActor(c.id);
+        actor.resistance = c.currentResistance;
+        actor.desire = c.currentDesire;
+        actor.stamina = actor.maxStamina;
+        c.currentStamina = actor.maxStamina;
+        return actor;
+      }),
+    ];
     this.enemies = enemiesIds.map((id) => this.createActor(id));
     this.enemyIds = enemiesIds.slice();
     this.order = [...this.allies, ...this.enemies];
