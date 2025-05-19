@@ -1,5 +1,6 @@
 # Text-Engine-2
-A text-based RPG engine that loads content from external files and runs it in a GUI with clickable choices.
+A text-based RPG engine that runs entirely in the browser.
+To try the demo offline, simply open `public/index.html` in any modern browser.
 
 Recommended Language and Stack for Browser Deployment
 For a web-deployable game engine on itch.io, TypeScript (transpiling to JavaScript) is the top recommendation. Itch.io requires HTML5 web technologies for in-browser games – essentially HTML, JavaScript, and CSS

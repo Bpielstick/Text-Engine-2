@@ -1,3 +1,4 @@
+import { scenes, skills, items, creatures, regions, gameConfig } from '../content/data.js';
 /** Error used for content validation issues. */
 export class ContentError extends Error{
   constructor(message){
@@ -23,45 +24,17 @@ export class ContentLoader{
   }
 
   async loadAll(){
-    const scenes=await this.loadArray('./content/scenes.json','scenes');
-    const skills=await this.loadArray('./content/skills.json','skills');
-    const items=await this.loadArray('./content/items.json','items');
-    const creatures=await this.loadArray('./content/creatures.json','creatures');
-    const regions=await this.loadArray('./content/regions.json','regions');
-    const config=await this.loadObject('./content/gameConfig.json','gameConfig');
+    // Data is embedded directly as JavaScript objects so the engine can run
+    // when opened via the file:// protocol with no local server.
     this.scenes=this.arrayToMap(scenes,'Scene');
     this.skills=this.arrayToMap(skills,'Skill');
     this.items=this.arrayToMap(items,'Item');
     this.creatures=this.arrayToMap(creatures,'Creature');
     this.regions=this.arrayToMap(regions,'Region');
-    this.config=config;
+    this.config=gameConfig;
     this.validateCrossReferences();
   }
 
-  async readJson(url){
-    const resp=await fetch(url);
-    if(!resp.ok) throw new ContentError(`Failed to load ${url}`);
-    return resp.json();
-  }
-
-  async loadArray(file,context){
-    const data=await this.readJson(file);
-    assert(Array.isArray(data),`${context} must be an array`);
-    const out=[];
-    data.forEach((obj,i)=>{
-      assert(obj&&obj.schemaVersion===1,`${context}[${i}] schemaVersion must be 1`);
-      assert(ID_REGEX.test(obj.id),`${context}[${i}] invalid id '${obj.id}'`);
-      out.push({...obj});
-    });
-    return out;
-  }
-
-  async loadObject(file,context){
-    const data=await this.readJson(file);
-    assert(data&&typeof data==='object'&&!Array.isArray(data),`${context} must be an object`);
-    assert(data.schemaVersion===1,`${context} schemaVersion must be 1`);
-    return data;
-  }
 
   arrayToMap(arr,name){
     const map=new Map();
