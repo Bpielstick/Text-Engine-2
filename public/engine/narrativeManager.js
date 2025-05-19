@@ -96,13 +96,9 @@ export class NarrativeManager {
                 }
             }
             if (choice.encounter) {
-                const loc = this.parseRoom(this.currentSceneId);
-                this.combatRoomId = loc?.roomId;
-                this.combatRegionId = loc?.regionId;
-                this.combatOnWin = choice.onWin;
-                this.combatOnLose = choice.onLose;
-                const result = this.combat.start(choice.encounter, choice.onWin, choice.onLose);
-                return result;
+                const result = this.combat.autoResolve(choice.encounter);
+                const next = result.result === 'win' ? choice.onWin : choice.onLose;
+                return this.start(next ?? this.currentSceneId);
             }
             let nextScene = this.currentSceneId;
             if (choice.nextScene) {

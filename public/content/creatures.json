@@ -1,1 +1,5 @@
-[]
+[
+  { "schemaVersion":1,"id":"greenSlime","name":"Green Slime","maxResistance":12,"maxDesire":12,"attack":2,"defense":0,"stamina":3,"skills":["basicAttack"],"xpReward":8,"drops":["slimeCore"] },
+  { "schemaVersion":1,"id":"hero","name":"Hero","maxResistance":25,"maxDesire":25,"attack":4,"defense":1,"stamina":5,"skills":["basicAttack"] },
+  { "schemaVersion":1,"id":"greenSlimeCompanion","name":"Slime Buddy","maxResistance":10,"maxDesire":0,"attack":3,"defense":0,"stamina":4,"skills":["basicAttack"],"levelUpIncreases":{"maxResistance":2,"attack":1} }
+]

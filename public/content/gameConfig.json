@@ -1,1 +1,1 @@
-{ "schemaVersion":1,"startScene":"","worldSeed":1,"canSaveInCombat":false }
+{ "schemaVersion":1,"startScene":"intro","playerCharacter":"hero","worldSeed":1234,"canSaveInCombat":false,"version":"1.0" }

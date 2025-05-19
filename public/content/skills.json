@@ -1,1 +1,3 @@
-[]
+[
+  { "schemaVersion":1,"id":"basicAttack","name":"Strike","targetType":"enemy","damageType":"physical","baseDamage":5,"staminaCost":0 }
+]

@@ -1,1 +1,3 @@
-[]
+[
+  { "schemaVersion":1,"id":"slimeCore","name":"Slime Essence Core","type":"essenceCore","description":"A pulsing green orb.","summonCreature":"greenSlimeCompanion","level":1,"xp":0,"xpToNext":50 }
+]
