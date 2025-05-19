@@ -4,6 +4,7 @@ Due to browser security rules around JavaScript modules, you need to serve the
 `public` folder over HTTP. From inside `public` run `python3 -m http.server`
 and then open the printed `http://localhost:8000/` URL in your browser.
 
+
 Recommended Language and Stack for Browser Deployment
 For a web-deployable game engine on itch.io, TypeScript (transpiling to JavaScript) is the top recommendation. Itch.io requires HTML5 web technologies for in-browser games – essentially HTML, JavaScript, and CSS
 itch.io
