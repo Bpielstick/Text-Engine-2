@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "schemaVersion":1,
+    "id":"intro",
+    "text":"You wake up in a misty glade. A green slime jiggles toward you.",
+    "choices":[
+      { "id":"fight", "text":"Tame the slime", "encounter":"greenSlime", "onWin":"loot", "onLose":"slimeDefeat" },
+      { "id":"leave", "text":"Retreat from the glade", "nextScene":"outro" }
+    ]
+  },
+  {
+    "schemaVersion":1,
+    "id":"loot",
+    "text":"The slime dissolves into a shimmering essence core that pulses in your palm.",
+    "choices":[
+      { "text":"Pocket the core", "effects":[{"addItem":"slimeCore"}], "nextScene":"outro" }
+    ],
+    "onEnter":[{ "change":{ "xp":10 } }]
+  },
+  {
+    "schemaVersion":1,
+    "id":"slimeDefeat",
+    "text":"Over-stimulated, you collapse in goo. Hours later you stagger upright at the glade’s edge, drenched but alive.",
+    "choices":[
+      { "text":"Shake it off and head home", "effects":[{ "set":{ "currentResistance":5,"currentDesire":0 } }], "nextScene":"outro" }
+    ]
+  },
+  { "schemaVersion":1, "id":"outro", "text":"End of demo. Thanks for playing!", "choices":[] }
+]

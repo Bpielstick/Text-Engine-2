@@ -358,6 +358,18 @@ export class CombatSystem {
             activeActorId: this.order[this.turnIdx].id,
         };
     }
+
+    autoResolve(encounter) {
+        let res = this.start(encounter);
+        while (this.running) {
+            const r = this.nextTurn();
+            if (r) {
+                res = r;
+                break;
+            }
+        }
+        return res;
+    }
 }
 export const combatSystem = new CombatSystem();
 export default combatSystem;
