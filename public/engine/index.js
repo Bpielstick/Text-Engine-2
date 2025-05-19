@@ -2,6 +2,8 @@ import narrativeManager from './narrativeManager.js';
 import { gameState, GameState } from './gameState.js';
 import { contentLoader } from './contentLoader.js';
 import { saveGame, loadGame } from './saveLoad.js';
+import combatSystem from './combatSystem.js';
+import { generateRegion, getScene } from './worldGenerator.js';
 const EngineAPI = {
     startGame() {
         gameState.hydrate(new GameState(contentLoader, contentLoader.config).serialize()); // clear vars → new game with defaults
@@ -14,8 +16,24 @@ const EngineAPI = {
     chooseOption(id) {
         return narrativeManager.chooseOption(id);
     },
-    combatAction(actionId, targetIdx) {
+    playerAction(actionId, targetIdx) {
         return narrativeManager.combatAction(actionId, targetIdx);
+    },
+    gotoScene(id) {
+        if (!contentLoader.scenes.has(id)) {
+            const m = id.match(/^(.+)_room\d+/);
+            if (m) {
+                const regionId = m[1];
+                generateRegion(regionId);
+                const scene = getScene(id);
+                contentLoader.scenes.set(id, scene);
+            }
+        }
+        gameState.world.currentRoomId = id;
+        return narrativeManager.start(id);
+    },
+    getCombatState() {
+        return combatSystem.getCombatState();
     },
     useItem(id) {
         const invIdx = gameState.inventory.findIndex((it) => it.id === id);
@@ -39,6 +57,14 @@ const EngineAPI = {
         if (item.onUse) {
             gameState.apply(item.onUse);
         }
+    },
+    summonCompanion(id) {
+        const item = contentLoader.items.get(id);
+        if (!item || item.type !== 'essenceCore' || !item.summonCreature)
+            return;
+        this.useItem(id);
+        combatSystem.addCompanion(item.summonCreature);
+        return combatSystem.getCombatState();
     },
     equipItem(id) {
         const invIdx = gameState.inventory.findIndex((it) => it.id === id);

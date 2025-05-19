@@ -16,6 +16,7 @@ export class GameState {
             seed: cfg.worldSeed,
             regions: {},
             currentScene: cfg.startScene,
+            currentRoomId: null,
             rngRuntime: 0,
         };
         const playerBase = loader.creatures.get(cfg.playerCharacter);
@@ -203,6 +204,7 @@ export class GameState {
             world: {
                 seed: this.world.seed,
                 currentScene: this.world.currentScene,
+                currentRoomId: this.world.currentRoomId,
                 rngRuntime: this.world.rngRuntime,
                 regions: Object.fromEntries(Object.entries(this.world.regions).map(([rid, r]) => [
                     rid,
@@ -238,6 +240,7 @@ export class GameState {
         this.world = {
             seed: data.world.seed,
             currentScene: data.world.currentScene,
+            currentRoomId: data.world.currentRoomId ?? null,
             rngRuntime: data.world.rngRuntime,
             regions: {},
         };

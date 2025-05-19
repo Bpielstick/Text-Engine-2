@@ -192,7 +192,6 @@ export class CombatSystem {
                 }
             }
         });
-        gameState.unsummonCompanions();
     }
     awardPlayerXp(xp) {
         const p = gameState.player;
@@ -356,6 +355,26 @@ export class CombatSystem {
             allies: this.allies,
             enemies: this.enemies,
             activeActorId: this.order[this.turnIdx].id,
+        };
+    }
+
+    addCompanion(id) {
+        const actor = this.createActor(id);
+        actor.stamina = actor.maxStamina;
+        this.allies.push(actor);
+        this.order.push(actor);
+    }
+
+    getCombatState() {
+        if (!this.running) {
+            return { inCombat: false };
+        }
+        return {
+            inCombat: true,
+            allies: this.allies,
+            enemies: this.enemies,
+            activeActorId: this.order[this.turnIdx].id,
+            usableSkills: this.getUsableSkills(this.playerActor).map((s) => ({ id: s.id, name: s.name })),
         };
     }
 
