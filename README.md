@@ -23,3 +23,12 @@ emelia.io
 , but running Python in-browser is non-trivial (it would require tools like Pyodide or converting Python to JS). There are projects to get Python games running via WebAssembly or PyScript, but they are not as mature and straightforward
 gamedev.stackexchange.com
 . Given the project’s scope and Codex’s ability to handle TypeScript well, sticking to a JavaScript-based stack is the most pragmatic choice for itch.io deployment. This ensures the engine can be played by users on the web with no extra installations, and leverages Codex’s coding proficiency under conditions (web context + static typing) that play to its strengths.
+
+## Running Locally
+
+To run this project locally:
+1. Ensure you have Python installed and available in your system's PATH.
+2. Double-click the `run.bat` file in the root directory of the project.
+3. This will start a local web server and should automatically open the game in your default web browser at `http://localhost:8000`.
+4. If the game doesn't open automatically, navigate to `http://localhost:8000` in your browser.
+5. To stop the server, close the command prompt window that was opened by `run.bat`.
