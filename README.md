@@ -1,11 +1,28 @@
-# Text-Engine-2
-A text-based RPG engine that runs entirely in the browser.
-Due to browser security rules around JavaScript modules, you need to serve the
-`public` folder over HTTP. From inside `public` run `python3 -m http.server`
-and then open the printed `http://localhost:8000/` URL in your browser.
+# Text Engine 2
 
+A simple text-based adventure game engine.
 
-Recommended Language and Stack for Browser Deployment
+## Running the Game
+
+To play the game:
+1. Clone or download this repository to your local machine.
+2. Open the `public/index.html` file in a modern web browser (such as Chrome, Firefox, Edge, or Safari).
+
+The game should then start and be playable directly in your browser. No special tools or local server are required.
+
+## Content Files
+
+Game content is defined in JSON files and then embedded into `public/content/data.js`:
+- `public/content/scenes.json`
+- `public/content/items.json`
+- `public/content/creatures.json`
+- `public/content/skills.json`
+- `public/content/regions.json`
+- `public/content/gameConfig.json`
+
+(Note: If these .json files are modified, `public/content/data.js` would need to be rebuilt or the engine changed to load .json files directly, which may have `file:///` restrictions).
+
+## Recommended Language and Stack for Browser Deployment
 For a web-deployable game engine on itch.io, TypeScript (transpiling to JavaScript) is the top recommendation. Itch.io requires HTML5 web technologies for in-browser games – essentially HTML, JavaScript, and CSS
 itch.io
 . This means the game engine must run client-side in the browser. While OpenAI Codex is strongest in Python and supports many languages (including JavaScript and TypeScript)
@@ -23,12 +40,3 @@ emelia.io
 , but running Python in-browser is non-trivial (it would require tools like Pyodide or converting Python to JS). There are projects to get Python games running via WebAssembly or PyScript, but they are not as mature and straightforward
 gamedev.stackexchange.com
 . Given the project’s scope and Codex’s ability to handle TypeScript well, sticking to a JavaScript-based stack is the most pragmatic choice for itch.io deployment. This ensures the engine can be played by users on the web with no extra installations, and leverages Codex’s coding proficiency under conditions (web context + static typing) that play to its strengths.
-
-## Running Locally
-
-To run this project locally:
-1. Ensure you have Python installed and available in your system's PATH.
-2. Double-click the `run.bat` file in the root directory of the project.
-3. This will start a local web server and should automatically open the game in your default web browser at `http://localhost:8000`.
-4. If the game doesn't open automatically, navigate to `http://localhost:8000` in your browser.
-5. To stop the server, close the command prompt window that was opened by `run.bat`.

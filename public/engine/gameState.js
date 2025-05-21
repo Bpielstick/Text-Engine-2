@@ -20,6 +20,9 @@ export class GameState {
             rngRuntime: 0,
         };
         const playerBase = loader.creatures.get(cfg.playerCharacter);
+        if (!playerBase) {
+            throw new Error(`Player character '${cfg.playerCharacter}' not found in loaded creatures. Cannot initialize game state.`);
+        }
         this.player = {
             resistance: playerBase?.maxResistance ?? 0,
             desire: 0,
